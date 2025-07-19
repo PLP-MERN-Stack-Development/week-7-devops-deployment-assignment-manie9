@@ -1,0 +1,21 @@
+[build]
+  base = "frontend/"
+  publish = "dist/"
+  command = "pnpm run build"
+
+[build.environment]
+  NODE_VERSION = "20"
+  PNPM_VERSION = "8"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[context.production.environment]
+  VITE_API_URL = "https://your-backend-domain.onrender.com"
+  VITE_SOCKET_URL = "https://your-backend-domain.onrender.com"
+
+[context.deploy-preview.environment]
+  VITE_API_URL = "https://your-staging-backend.onrender.com"
+  VITE_SOCKET_URL = "https://your-staging-backend.onrender.com"

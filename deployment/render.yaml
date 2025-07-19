@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: mern-chat-backend
+    env: node
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        fromDatabase:
+          name: mern-chat-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://your-frontend-domain.vercel.app
+      - key: FRONTEND_URL_ALT
+        value: https://your-frontend-domain.netlify.app
+
+databases:
+  - name: mern-chat-db
+    databaseName: mern_chat
+    user: mern_chat_user
+    plan: free

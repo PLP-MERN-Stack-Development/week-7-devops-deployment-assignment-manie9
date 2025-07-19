@@ -1,0 +1,44 @@
+# UptimeRobot configuration example
+# This is a reference for setting up monitoring
+
+monitors:
+  - name: "MERN Chat Backend API"
+    type: "HTTP"
+    url: "https://your-backend-domain.onrender.com/health"
+    interval: 300  # 5 minutes
+    timeout: 30
+    expected_status: 200
+    
+  - name: "MERN Chat Frontend"
+    type: "HTTP"
+    url: "https://your-frontend-domain.vercel.app"
+    interval: 300  # 5 minutes
+    timeout: 30
+    expected_status: 200
+
+  - name: "MERN Chat WebSocket"
+    type: "PORT"
+    url: "your-backend-domain.onrender.com"
+    port: 443
+    interval: 300  # 5 minutes
+
+alerts:
+  - type: "email"
+    email: "your-email@example.com"
+  - type: "webhook"
+    url: "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+
+# Pingdom configuration example
+pingdom:
+  checks:
+    - name: "MERN Chat API Health"
+      type: "http"
+      hostname: "your-backend-domain.onrender.com"
+      url: "/health"
+      resolution: 5  # minutes
+      
+    - name: "MERN Chat Frontend"
+      type: "http"
+      hostname: "your-frontend-domain.vercel.app"
+      url: "/"
+      resolution: 5  # minutes

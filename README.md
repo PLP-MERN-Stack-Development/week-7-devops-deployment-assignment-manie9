@@ -16,7 +16,19 @@ You will:
 
 1. Accept the GitHub Classroom assignment invitation
 2. Clone your personal repository that was created by GitHub Classroom
-3. Follow the setup instructions in the `Week7-Assignment.md` file
+3. Follow the setup instructions in the `Week7-Assignmenconst isAdmin = (req, res, next) => {
+  const user = getUserById(req.user.id);
+  if (user.role !== 'admin') {
+    return res.status(403).send('Access denied');
+  }
+  next();
+};
+
+// Usage in routes
+app.post('/admin-action', isAdmin, (req, res) => {
+  // Admin-specific action
+});
+t.md` file
 4. Use the provided templates and configuration files as a starting point
 
 ## Files Included

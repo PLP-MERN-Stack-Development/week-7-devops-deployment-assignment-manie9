@@ -3,9 +3,40 @@ const { body, validationResult } = require('express-validator');
 const Message = require('../models/Message');
 const Room = require('../models/Room');
 const auth = require('../middleware/auth');
+const multer = require('multer');
+const path = require('path');
 
 const router = express.Router();
 
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/')
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname))
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB limit
+  },
+  fileFilter: function (req, file, cb) {
+    // Allow images and common file types
+    const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|txt/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Invalid file type'));
+    }
+  }
+});
 
 // @route   GET /api/messages/:roomId
 // @desc    Get messages for a room
@@ -15,18 +46,34 @@ router.get('/:roomId', auth, async (req, res) => {
     const { page = 1, limit = 50 } = req.query;
     const { roomId } = req.params;
 
-    // Check if room exists and user is a member
+    // Check if room exists
     const room = await Room.findById(roomId);
     if (!room) {
       return res.status(404).json({ message: 'Room not found' });
     }
 
-    const isMember = room.members.some(member => 
-      member.user.toString() === req.user._id.toString()
-    );
+    // Auto-join user to public rooms
+    if (!room.isPrivate) {
+      const isMember = room.members.some(member => 
+        member.user.toString() === req.user._id.toString()
+      );
+      
+      if (!isMember) {
+        room.members.push({
+          user: req.user._id,
+          role: 'member'
+        });
+        await room.save();
+      }
+    } else {
+      // Check if user is a member of private room
+      const isMember = room.members.some(member => 
+        member.user.toString() === req.user._id.toString()
+      );
 
-    if (!isMember && room.isPrivate) {
-      return res.status(403).json({ message: 'Access denied' });
+      if (!isMember) {
+        return res.status(403).json({ message: 'Access denied' });
+      }
     }
 
     const messages = await Message.find({ room: roomId })
@@ -57,6 +104,7 @@ router.get('/:roomId', auth, async (req, res) => {
 router.post('/', [
   auth,
   body('content')
+    .optional()
     .trim()
     .isLength({ min: 1, max: 1000 })
     .withMessage('Message must be between 1 and 1000 characters'),
@@ -72,23 +120,38 @@ router.post('/', [
 
     const { content, room, replyTo, messageType = 'text' } = req.body;
 
-    // Check if room exists and user is a member
+    // Check if room exists
     const roomDoc = await Room.findById(room);
     if (!roomDoc) {
       return res.status(404).json({ message: 'Room not found' });
     }
 
-    const isMember = roomDoc.members.some(member => 
-      member.user.toString() === req.user._id.toString()
-    );
+    // Auto-join user to public rooms
+    if (!roomDoc.isPrivate) {
+      const isMember = roomDoc.members.some(member => 
+        member.user.toString() === req.user._id.toString()
+      );
+      
+      if (!isMember) {
+        roomDoc.members.push({
+          user: req.user._id,
+          role: 'member'
+        });
+        await roomDoc.save();
+      }
+    } else {
+      // Check if user is a member of private room
+      const isMember = roomDoc.members.some(member => 
+        member.user.toString() === req.user._id.toString()
+      );
 
-    // Allow all users to send messages in non-private rooms
-    if (!isMember && roomDoc.isPrivate) {
-      return res.status(403).json({ message: 'Access denied' });
+      if (!isMember) {
+        return res.status(403).json({ message: 'Access denied' });
+      }
     }
 
     const message = new Message({
-      content,
+      content: content || '',
       sender: req.user._id,
       room,
       messageType,
@@ -111,6 +174,78 @@ router.post('/', [
     });
   } catch (error) {
     console.error('Send message error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   POST /api/messages/upload
+// @desc    Upload file and send message
+// @access  Private
+router.post('/upload', auth, upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const { room, replyTo } = req.body;
+
+    // Check if room exists and user has access
+    const roomDoc = await Room.findById(room);
+    if (!roomDoc) {
+      return res.status(404).json({ message: 'Room not found' });
+    }
+
+    // Auto-join user to public rooms
+    if (!roomDoc.isPrivate) {
+      const isMember = roomDoc.members.some(member => 
+        member.user.toString() === req.user._id.toString()
+      );
+      
+      if (!isMember) {
+        roomDoc.members.push({
+          user: req.user._id,
+          role: 'member'
+        });
+        await roomDoc.save();
+      }
+    } else {
+      // Check if user is a member of private room
+      const isMember = roomDoc.members.some(member => 
+        member.user.toString() === req.user._id.toString()
+      );
+
+      if (!isMember) {
+        return res.status(403).json({ message: 'Access denied' });
+      }
+    }
+
+    const message = new Message({
+      content: `Shared a file: ${req.file.originalname}`,
+      sender: req.user._id,
+      room,
+      messageType: req.file.mimetype.startsWith('image/') ? 'image' : 'file',
+      fileUrl: `/uploads/${req.file.filename}`,
+      fileName: req.file.originalname,
+      fileSize: req.file.size,
+      replyTo: replyTo || null
+    });
+
+    await message.save();
+    await message.populate('sender', 'username avatar');
+    if (replyTo) {
+      await message.populate('replyTo', 'content sender');
+    }
+
+    // Update room's last activity
+    roomDoc.lastActivity = new Date();
+    await roomDoc.save();
+
+    res.status(201).json({
+      message: 'File uploaded and message sent successfully',
+      data: message
+    });
+  } catch (error) {
+    console.error('Upload file error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

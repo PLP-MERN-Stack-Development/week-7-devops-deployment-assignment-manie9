@@ -1,90 +1,276 @@
-[![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-2e0aaae1b6195c2367325f4f02e2d04e9abb55f0b24a779b69b11b9e10269abc.svg)](https://classroom.github.com/online_ide?assignment_repo_id=19957809&assignment_repo_type=AssignmentRepo)
-# Deployment and DevOps for MERN Applications
+# MERN Chat Application
 
-This assignment focuses on deploying a full MERN stack application to production, implementing CI/CD pipelines, and setting up monitoring for your application.
+A modern, real-time multi-room chat application built with the MERN stack (MongoDB, Express.js, React, Node.js) and Socket.io for real-time communication.
 
-## Assignment Overview
+## 🚀 Features
 
-You will:
-1. Prepare your MERN application for production deployment
-2. Deploy the backend to a cloud platform
-3. Deploy the frontend to a static hosting service
-4. Set up CI/CD pipelines with GitHub Actions
-5. Implement monitoring and maintenance strategies
+- **Real-time messaging** with Socket.io
+- **Multi-room support** with public and private rooms
+- **User authentication** with JWT
+- **Typing indicators** and online status
+- **Message reactions** and replies
+- **Responsive design** with Tailwind CSS v4
+- **Modern UI/UX** with smooth animations
+- **Production-ready** with comprehensive error handling
+- **CI/CD pipelines** with GitHub Actions
+- **Deployment configurations** for multiple platforms
 
-## Getting Started
+## 🛠️ Tech Stack
 
-1. Accept the GitHub Classroom assignment invitation
-2. Clone your personal repository that was created by GitHub Classroom
-3. Follow the setup instructions in the `Week7-Assignmenconst isAdmin = (req, res, next) => {
-  const user = getUserById(req.user.id);
-  if (user.role !== 'admin') {
-    return res.status(403).send('Access denied');
-  }
-  next();
-};
+### Backend
+- **Node.js** with Express.js
+- **MongoDB** with Mongoose ODM
+- **Socket.io** for real-time communication
+- **JWT** for authentication
+- **bcryptjs** for password hashing
+- **Helmet** for security headers
+- **Rate limiting** and CORS protection
 
-// Usage in routes
-app.post('/admin-action', isAdmin, (req, res) => {
-  // Admin-specific action
-});
-t.md` file
-4. Use the provided templates and configuration files as a starting point
+### Frontend
+- **React 18** with TypeScript
+- **Vite** for fast development and building
+- **Tailwind CSS v4** for styling
+- **Zustand** for state management
+- **React Hook Form** for form handling
+- **Socket.io Client** for real-time features
+- **React Router** for navigation
 
-## Files Included
+### DevOps & Deployment
+- **GitHub Actions** for CI/CD
+- **Docker** support (optional)
+- **Render/Railway** for backend hosting
+- **Vercel/Netlify** for frontend hosting
+- **MongoDB Atlas** for database hosting
 
-- `Week7-Assignment.md`: Detailed assignment instructions
-- `.github/workflows/`: GitHub Actions workflow templates
-- `deployment/`: Deployment configuration files and scripts
-- `.env.example`: Example environment variable templates
-- `monitoring/`: Monitoring configuration examples
+## 📦 Installation
 
-## Requirements
+### Prerequisites
+- Node.js 18+ 
+- pnpm (recommended) or npm
+- MongoDB (local or Atlas)
 
-- A completed MERN stack application from previous weeks
-- Accounts on the following services:
-  - GitHub
-  - MongoDB Atlas
-  - Render, Railway, or Heroku (for backend)
-  - Vercel, Netlify, or GitHub Pages (for frontend)
-- Basic understanding of CI/CD concepts
+### Quick Start
 
-## Deployment Platforms
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd mern-chat-app
+   ```
 
-### Backend Deployment Options
-- **Render**: Easy to use, free tier available
-- **Railway**: Developer-friendly, generous free tier
-- **Heroku**: Well-established, extensive documentation
+2. **Install dependencies**
+   ```bash
+   pnpm run install-deps
+   ```
 
-### Frontend Deployment Options
-- **Vercel**: Optimized for React apps, easy integration
-- **Netlify**: Great for static sites, good CI/CD
-- **GitHub Pages**: Free, integrated with GitHub
+3. **Set up environment variables**
+   ```bash
+   chmod +x scripts/setup-env.sh
+   ./scripts/setup-env.sh
+   ```
 
-## CI/CD Pipeline
+4. **Update environment files**
+   - Edit `backend/.env` with your MongoDB URI and JWT secret
+   - Edit `frontend/.env` with your API URLs
 
-The assignment includes templates for setting up GitHub Actions workflows:
-- `frontend-ci.yml`: Tests and builds the React application
-- `backend-ci.yml`: Tests the Express.js backend
-- `frontend-cd.yml`: Deploys the frontend to your chosen platform
-- `backend-cd.yml`: Deploys the backend to your chosen platform
+5. **Start development servers**
+   ```bash
+   pnpm run dev
+   ```
 
-## Submission
+The application will be available at:
+- Frontend: http://localhost:5173
+- Backend: http://localhost:5000
 
-Your work will be automatically submitted when you push to your GitHub Classroom repository. Make sure to:
+## 🔧 Environment Variables
 
-1. Complete all deployment tasks
-2. Set up CI/CD pipelines with GitHub Actions
-3. Deploy both frontend and backend to production
-4. Document your deployment process in the README.md
-5. Include screenshots of your CI/CD pipeline in action
-6. Add URLs to your deployed applications
+### Backend (.env)
+```env
+NODE_ENV=development
+PORT=5000
+MONGODB_URI=mongodb://localhost:27017/mern-chat
+JWT_SECRET=your-super-secret-jwt-key
+FRONTEND_URL=http://localhost:5173
+```
 
-## Resources
+### Frontend (.env)
+```env
+VITE_API_URL=http://localhost:5000
+VITE_SOCKET_URL=http://localhost:5000
+```
 
-- [GitHub Actions Documentation](https://docs.github.com/en/actions)
-- [MongoDB Atlas Documentation](https://docs.atlas.mongodb.com/)
-- [Render Documentation](https://render.com/docs)
-- [Railway Documentation](https://docs.railway.app/)
-- [Vercel Documentation](https://vercel.com/docs)
-- [Netlify Documentation](https://docs.netlify.com/) 
+## 🚀 Deployment
+
+### Automated Deployment
+
+Use the deployment script:
+```bash
+chmod +x scripts/deploy.sh
+./scripts/deploy.sh
+```
+
+### Manual Deployment
+
+#### Backend (Render/Railway/Heroku)
+
+1. **Render**
+   - Connect your GitHub repository
+   - Use `backend` as the root directory
+   - Set environment variables in dashboard
+   - Deploy automatically on push
+
+2. **Railway**
+   - Connect GitHub repository
+   - Configure environment variables
+   - Deploy with one click
+
+#### Frontend (Vercel/Netlify)
+
+1. **Vercel**
+   - Connect GitHub repository
+   - Set root directory to `frontend`
+   - Configure environment variables
+   - Deploy automatically
+
+2. **Netlify**
+   - Connect GitHub repository
+   - Set build directory to `frontend/dist`
+   - Configure environment variables
+
+## 🧪 Testing
+
+### Run all tests
+```bash
+pnpm test
+```
+
+### Backend tests only
+```bash
+cd backend && pnpm test
+```
+
+### Frontend tests only
+```bash
+cd frontend && pnpm test
+```
+
+## 📊 Monitoring
+
+### Health Checks
+The application includes health check endpoints:
+- Backend: `/health`
+- API Status: `/api/status`
+
+### Monitoring Setup
+1. Configure uptime monitoring (UptimeRobot, Pingdom)
+2. Set up error tracking (Sentry)
+3. Monitor performance metrics
+4. Set up alerts for downtime
+
+## 🔒 Security Features
+
+- **Helmet.js** for security headers
+- **Rate limiting** to prevent abuse
+- **CORS** configuration
+- **JWT** authentication
+- **Password hashing** with bcrypt
+- **Input validation** and sanitization
+- **Environment variable** protection
+
+## 🏗️ Project Structure
+
+```
+mern-chat-app/
+├── backend/                 # Express.js backend
+│   ├── models/             # Mongoose models
+│   ├── routes/             # API routes
+│   ├── middleware/         # Custom middleware
+│   ├── socket/             # Socket.io handlers
+│   └── __tests__/          # Backend tests
+├── frontend/               # React frontend
+│   ├── src/
+│   │   ├── components/     # React components
+│   │   ├── pages/          # Page components
+│   │   ├── stores/         # Zustand stores
+│   │   ├── contexts/       # React contexts
+│   │   └── test/           # Frontend tests
+├── .github/workflows/      # GitHub Actions
+├── deployment/             # Deployment configs
+├── monitoring/             # Monitoring setup
+├── scripts/                # Utility scripts
+└── README.md
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new features
+5. Ensure all tests pass
+6. Submit a pull request
+
+## 📝 API Documentation
+
+### Authentication Endpoints
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - Login user
+- `GET /api/auth/me` - Get current user
+- `POST /api/auth/logout` - Logout user
+
+### Room Endpoints
+- `GET /api/rooms` - Get all rooms
+- `POST /api/rooms` - Create new room
+- `GET /api/rooms/:id` - Get room by ID
+- `POST /api/rooms/:id/join` - Join room
+- `POST /api/rooms/:id/leave` - Leave room
+
+### Message Endpoints
+- `GET /api/messages/:roomId` - Get room messages
+- `POST /api/messages` - Send message
+- `PUT /api/messages/:id` - Edit message
+- `DELETE /api/messages/:id` - Delete message
+- `POST /api/messages/:id/react` - React to message
+
+## 🔧 Development
+
+### Available Scripts
+
+```bash
+# Development
+pnpm run dev          # Start both frontend and backend
+pnpm run server       # Start backend only
+pnpm run client       # Start frontend only
+
+# Building
+pnpm run build        # Build frontend for production
+
+# Testing
+pnpm test             # Run all tests
+pnpm run test:watch   # Run tests in watch mode
+
+# Deployment
+pnpm start            # Start production server
+```
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Socket.io for real-time communication
+- Tailwind CSS for beautiful styling
+- MongoDB Atlas for database hosting
+- Vercel/Netlify for frontend hosting
+- Render/Railway for backend hosting
+
+## 📞 Support
+
+If you have any questions or need help with deployment, please:
+1. Check the documentation
+2. Search existing issues
+3. Create a new issue with detailed information
+
+---
+
+**Happy Chatting! 🎉**

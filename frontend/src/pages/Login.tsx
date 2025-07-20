@@ -52,6 +52,7 @@ const Login: React.FC = () => {
                   <Mail className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
+                  id="email"
                   {...register('email', {
                     required: 'Email is required',
                     pattern: {
@@ -79,6 +80,7 @@ const Login: React.FC = () => {
                   <Lock className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
+                  id="password"
                   {...register('password', {
                     required: 'Password is required',
                     minLength: {

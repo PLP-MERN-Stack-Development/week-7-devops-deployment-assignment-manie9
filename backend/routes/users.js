@@ -57,6 +57,7 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
+
 // @route   PUT /api/users/profile
 // @desc    Update user profile
 // @access  Private

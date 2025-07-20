@@ -11,7 +11,8 @@ const roomSchema = new mongoose.Schema({
   description: {
     type: String,
     trim: true,
-    maxlength: [200, 'Description cannot exceed 200 characters']
+    maxlength: [200, 'Description cannot exceed 200 characters'],
+    default: ''
   },
   isPrivate: {
     type: Boolean,
@@ -54,6 +55,10 @@ const roomSchema = new mongoose.Schema({
   lastActivity: {
     type: Date,
     default: Date.now
+  },
+  isGeneral: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true
@@ -63,5 +68,7 @@ const roomSchema = new mongoose.Schema({
 roomSchema.index({ name: 1 });
 roomSchema.index({ creator: 1 });
 roomSchema.index({ 'members.user': 1 });
+roomSchema.index({ isPrivate: 1 });
+roomSchema.index({ isGeneral: 1 });
 
 module.exports = mongoose.model('Room', roomSchema);

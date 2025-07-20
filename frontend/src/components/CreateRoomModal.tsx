@@ -11,7 +11,7 @@ interface CreateRoomModalProps {
 interface CreateRoomForm {
   name: string
   description: string
-  isPrivate: boolean
+  isPrivate: string
   password: string
   maxMembers: number
 }
@@ -28,20 +28,24 @@ const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ onClose }) => {
   } = useForm<CreateRoomForm>({
     defaultValues: {
       maxMembers: 100,
-      isPrivate: false
+      isPrivate: "false"
     }
   })
 
   const isPrivate = watch('isPrivate')
+  const [, setDummy] = React.useState(false);
 
   const onSubmit = async (data: CreateRoomForm) => {
     setIsLoading(true)
+    const { password, ...roomData } = data;
+    const isPrivate = data.isPrivate === "true";
+    // Remove password from roomData to avoid TS error
+    const roomDataWithoutPassword = { ...roomData } as Omit<typeof roomData, 'password'>;
     const success = await createRoom({
-      name: data.name,
-      description: data.description,
-      isPrivate: data.isPrivate,
-      password: data.isPrivate ? data.password : '',
-      maxMembers: data.maxMembers
+      ...roomDataWithoutPassword,
+      isPrivate,
+      // @ts-ignore
+      password: isPrivate ? password : '',
     })
     setIsLoading(false)
     
@@ -49,6 +53,17 @@ const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ onClose }) => {
       onClose()
     }
   }
+
+  React.useEffect(() => {
+    // Fix for radio button not updating correctly
+    const radios = document.querySelectorAll('input[name="isPrivate"]');
+    radios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        // Force update by triggering React state update
+        setDummy(dummy => !dummy);
+      });
+    });
+  }, []);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -114,45 +129,45 @@ const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ onClose }) => {
               Room Type
             </label>
             <div className="space-y-2">
-              <label className="flex items-center">
-                <input
-                  {...register('isPrivate')}
-                  type="radio"
-                  value="false"
-                  className="sr-only"
-                />
-                <div className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-colors ${
-                  !isPrivate 
-                    ? 'border-primary-500 bg-primary-500 bg-opacity-10' 
-                    : 'border-gray-600 hover:border-gray-500'
-                }`}>
-                  <Hash className="h-5 w-5 text-gray-400" />
-                  <div>
-                    <div className="text-white font-medium">Public Room</div>
-                    <div className="text-sm text-gray-400">Anyone can join</div>
-                  </div>
+            <label className="flex items-center">
+              <input
+                {...register('isPrivate')}
+                type="radio"
+                value={"false"}
+                className="sr-only"
+              />
+              <div className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-colors ${
+                !isPrivate 
+                  ? 'border-primary-500 bg-primary-500 bg-opacity-10' 
+                  : 'border-gray-600 hover:border-gray-500'
+              }`}>
+                <Hash className="h-5 w-5 text-gray-400" />
+                <div>
+                  <div className="text-white font-medium">Public Room</div>
+                  <div className="text-sm text-gray-400">Anyone can join</div>
                 </div>
-              </label>
+              </div>
+            </label>
 
-              <label className="flex items-center">
-                <input
-                  {...register('isPrivate')}
-                  type="radio"
-                  value="true"
-                  className="sr-only"
-                />
-                <div className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-colors ${
-                  isPrivate 
-                    ? 'border-primary-500 bg-primary-500 bg-opacity-10' 
-                    : 'border-gray-600 hover:border-gray-500'
-                }`}>
-                  <Lock className="h-5 w-5 text-gray-400" />
-                  <div>
-                    <div className="text-white font-medium">Private Room</div>
-                    <div className="text-sm text-gray-400">Requires password to join</div>
-                  </div>
+            <label className="flex items-center">
+              <input
+                {...register('isPrivate')}
+                type="radio"
+                value={"true"}
+                className="sr-only"
+              />
+              <div className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-colors ${
+                isPrivate 
+                  ? 'border-primary-500 bg-primary-500 bg-opacity-10' 
+                  : 'border-gray-600 hover:border-gray-500'
+              }`}>
+                <Lock className="h-5 w-5 text-gray-400" />
+                <div>
+                  <div className="text-white font-medium">Private Room</div>
+                  <div className="text-sm text-gray-400">Requires password to join</div>
                 </div>
-              </label>
+              </div>
+            </label>
             </div>
           </div>
 

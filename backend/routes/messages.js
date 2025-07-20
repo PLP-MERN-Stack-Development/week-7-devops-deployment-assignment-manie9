@@ -6,6 +6,7 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
+
 // @route   GET /api/messages/:roomId
 // @desc    Get messages for a room
 // @access  Private
@@ -81,7 +82,8 @@ router.post('/', [
       member.user.toString() === req.user._id.toString()
     );
 
-    if (!isMember) {
+    // Allow all users to send messages in non-private rooms
+    if (!isMember && roomDoc.isPrivate) {
       return res.status(403).json({ message: 'Access denied' });
     }
 

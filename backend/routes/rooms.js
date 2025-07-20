@@ -7,16 +7,17 @@ const auth = require('../middleware/auth');
 const router = express.Router();
 
 // @route   GET /api/rooms
-// @desc    Get all public rooms
+// @desc    Get all accessible rooms for the user
 // @access  Private
 router.get('/', auth, async (req, res) => {
   try {
     const { page = 1, limit = 20, search = '' } = req.query;
     
+    // Get all public rooms and rooms where user is a member
     const query = {
       $or: [
-        { isPrivate: false },
-        { 'members.user': req.user._id }
+        { isPrivate: false }, // All public rooms
+        { 'members.user': req.user._id } // Rooms where user is a member
       ]
     };
 
@@ -27,9 +28,20 @@ router.get('/', auth, async (req, res) => {
     const rooms = await Room.find(query)
       .populate('creator', 'username avatar')
       .populate('members.user', 'username avatar status')
-      .sort({ lastActivity: -1 })
+      .sort({ isGeneral: -1, lastActivity: -1 }) // General room first, then by activity
       .limit(limit * 1)
       .skip((page - 1) * limit);
+
+    // Auto-join user to public rooms they're not already in
+    for (const room of rooms) {
+      if (!room.isPrivate && !room.members.some(member => member.user._id.toString() === req.user._id.toString())) {
+        room.members.push({
+          user: req.user._id,
+          role: 'member'
+        });
+        await room.save();
+      }
+    }
 
     const total = await Room.countDocuments(query);
 
@@ -58,8 +70,22 @@ router.get('/:id', auth, async (req, res) => {
       return res.status(404).json({ message: 'Room not found' });
     }
 
-    // Check if user is a member of private room
-    if (room.isPrivate) {
+    // Auto-join user to public rooms
+    if (!room.isPrivate) {
+      const isMember = room.members.some(member => 
+        member.user._id.toString() === req.user._id.toString()
+      );
+      
+      if (!isMember) {
+        room.members.push({
+          user: req.user._id,
+          role: 'member'
+        });
+        await room.save();
+        await room.populate('members.user', 'username avatar status');
+      }
+    } else {
+      // Check if user is a member of private room
       const isMember = room.members.some(member => 
         member.user._id.toString() === req.user._id.toString()
       );
@@ -106,7 +132,7 @@ router.post('/', [
 
     const room = new Room({
       name,
-      description,
+      description: description || '',
       isPrivate: isPrivate || false,
       password: password || '',
       creator: req.user._id,
@@ -196,6 +222,11 @@ router.post('/:id/leave', auth, async (req, res) => {
       return res.status(404).json({ message: 'Room not found' });
     }
 
+    // Don't allow leaving general room
+    if (room.isGeneral) {
+      return res.status(400).json({ message: 'Cannot leave the general room' });
+    }
+
     // Check if user is a member
     const memberIndex = room.members.findIndex(member => 
       member.user.toString() === req.user._id.toString()
@@ -213,6 +244,33 @@ router.post('/:id/leave', auth, async (req, res) => {
     res.json({ message: 'Left room successfully' });
   } catch (error) {
     console.error('Leave room error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   GET /api/rooms/:id/password
+// @desc    Get room password (for admins/moderators)
+// @access  Private
+router.get('/:id/password', auth, async (req, res) => {
+  try {
+    const room = await Room.findById(req.params.id);
+
+    if (!room) {
+      return res.status(404).json({ message: 'Room not found' });
+    }
+
+    // Check if user is admin or moderator of the room
+    const member = room.members.find(member => 
+      member.user.toString() === req.user._id.toString()
+    );
+
+    if (!member || (member.role !== 'admin' && member.role !== 'moderator')) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+    res.json({ password: room.password });
+  } catch (error) {
+    console.error('Get room password error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

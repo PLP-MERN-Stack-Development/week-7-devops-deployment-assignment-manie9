@@ -7,6 +7,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const morgan = require('morgan');
 const compression = require('compression');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -62,6 +63,16 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Create uploads directory if it doesn't exist
+const fs = require('fs');
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
 // Logging
 if (process.env.NODE_ENV === 'production') {
   app.use(morgan('combined'));
@@ -77,11 +88,59 @@ const connectDB = async () => {
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
       bufferCommands: false,
+      bufferMaxEntries: 0,
     });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
+    
+    // Create general room after DB connection
+    await createGeneralRoom();
   } catch (error) {
     console.error('Database connection error:', error);
     process.exit(1);
+  }
+};
+
+// Create general room function
+const createGeneralRoom = async () => {
+  try {
+    const Room = require('./models/Room');
+    const User = require('./models/User');
+
+    // Check if general room already exists
+    const existingRoom = await Room.findOne({ isGeneral: true });
+    if (existingRoom) {
+      return;
+    }
+
+    // Create a system user if it doesn't exist
+    let systemUser = await User.findOne({ email: 'system@chatapp.com' });
+    if (!systemUser) {
+      systemUser = new User({
+        username: 'System',
+        email: 'system@chatapp.com',
+        password: 'system123456'
+      });
+      await systemUser.save();
+    }
+
+    // Create general room
+    const generalRoom = new Room({
+      name: 'General',
+      description: 'Welcome to the general chat room! This is where everyone can chat together.',
+      isPrivate: false,
+      creator: systemUser._id,
+      isGeneral: true,
+      maxMembers: 1000,
+      members: [{
+        user: systemUser._id,
+        role: 'admin'
+      }]
+    });
+
+    await generalRoom.save();
+    console.log('General room created successfully');
+  } catch (error) {
+    console.error('Error creating general room:', error);
   }
 };
 

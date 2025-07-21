@@ -10,7 +10,7 @@ import LoadingSpinner from './LoadingSpinner'
 
 const ChatRoom: React.FC = () => {
   const { roomId } = useParams()
-  const { currentRoom, messages, fetchMessages, setCurrentRoom } = useChatStore()
+  const { currentRoom, messages, fetchMessages } = useChatStore()
   const { joinRoom } = useSocket()
   const [isLoading, setIsLoading] = React.useState(false)
 

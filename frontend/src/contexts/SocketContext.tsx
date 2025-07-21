@@ -39,7 +39,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     setUserOnline, 
     setUserTyping, 
     updateMessage,
-    setCurrentRoom,
     currentRoom 
   } = useChatStore()
 

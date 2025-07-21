@@ -8,6 +8,7 @@ export interface Room {
   _id: string
   name: string
   description: string
+  isGeneral?: boolean;
   isPrivate: boolean
   creator: {
     _id: string
@@ -93,14 +94,14 @@ interface ChatState {
   
   // Real-time actions
   setUserOnline: (userId: string, isOnline: boolean) => void
-  setUserTyping: (roomId: string, userId: string, username: string, isTyping: boolean) => void
+  setUserTyping: (roomId: string, _: string, username: string, isTyping: boolean) => void
   
   // Utility actions
   clearMessages: (roomId: string) => void
   reset: () => void
 }
 
-export const useChatStore = create<ChatState>((set, get) => ({
+export const useChatStore = create<ChatState>((set, _) => ({
   rooms: [],
   currentRoom: null,
   messages: {},
@@ -248,7 +249,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }))
   },
 
-  setUserTyping: (roomId: string, userId: string, username: string, isTyping: boolean) => {
+  setUserTyping: (roomId: string, _: string, username: string, isTyping: boolean) => {
     set(state => {
       const roomTypingUsers = state.typingUsers[roomId] || []
       

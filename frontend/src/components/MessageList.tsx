@@ -17,7 +17,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages }) => {
   const { reactToMessage } = useSocket()
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
   const [showEmojiPicker, setShowEmojiPicker] = React.useState<string | null>(null)
-  const [replyingTo, setReplyingTo] = React.useState<Message | null>(null)
+  //const [replyingTo, setReplyingTo] = React.useState<Message | null>(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -43,7 +43,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages }) => {
   }
 
   const groupMessagesByDate = (messages: Message[]) => {
-    const groups: { [key: string]: Message[] } = {}
+    const groups: Record<string, Message[]> = {}
     
     messages.forEach(message => {
       const date = new Date(message.createdAt)
@@ -240,13 +240,13 @@ const MessageList: React.FC<MessageListProps> = ({ messages }) => {
                           )}
                         </div>
                         
-                        <button
-                          onClick={() => setReplyingTo(message)}
+                         <button
+                          //onClick={() => setReplyingTo(message)}
                           className="p-1 text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors"
                           title="Reply"
                         >
                           <Reply className="h-4 w-4" />
-                        </button>
+                        </button> 
                         
                         <button
                           className="p-1 text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors"

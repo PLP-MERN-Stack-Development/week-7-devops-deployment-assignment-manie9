@@ -7,7 +7,6 @@ import MessageInput from './MessageInput'
 import RoomHeader from './RoomHeader'
 import LoadingSpinner from './LoadingSpinner'
 
-
 const ChatRoom: React.FC = () => {
   const { roomId } = useParams()
   const { currentRoom, messages, fetchMessages } = useChatStore()
@@ -54,7 +53,7 @@ const ChatRoom: React.FC = () => {
   const roomMessages = messages[currentRoom._id] || []
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col h-full overflow-hidden">
       <RoomHeader room={currentRoom} />
       <MessageList messages={roomMessages} />
       <MessageInput roomId={currentRoom._id} />

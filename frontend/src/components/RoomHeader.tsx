@@ -1,9 +1,9 @@
 import React from 'react'
 import { Hash, Lock, Users, Settings, Phone, Video, Info, UserPlus } from 'lucide-react'
-import { Room } from '../stores/chatStore'
 import { useAuthStore } from '../stores/authStore'
 import RoomSettingsModal from './RoomSettingsModal'
 import RoomInfoModal from './RoomInfoModal'
+import { Room } from '../types'
 
 interface RoomHeaderProps {
   room: Room
@@ -56,7 +56,7 @@ const RoomHeader: React.FC<RoomHeaderProps> = ({ room }) => {
               <div>
                 <div className="flex items-center space-x-2">
                   <h1 className="text-xl font-semibold text-white">{room.name}</h1>
-                  {room.isGeneral && (
+                  {room.isGeneral === true && (
                     <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full">
                       General
                     </span>

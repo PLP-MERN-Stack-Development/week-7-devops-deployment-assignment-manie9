@@ -1,7 +1,7 @@
 import React from 'react'
 import { useForm } from 'react-hook-form'
 import { X, Save, Trash2, Eye, EyeOff } from 'lucide-react'
-import { Room } from '../stores/chatStore'
+import { Room } from '../types'
 import LoadingSpinner from './LoadingSpinner'
 import toast from 'react-hot-toast'
 import axios from 'axios'
@@ -212,7 +212,7 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({ room, onClose }) 
             <button
               type="button"
               onClick={handleDeleteRoom}
-              disabled={isLoading || room.isGeneral}
+              disabled={isLoading || room.isGeneral === true}
               className="flex items-center space-x-2 px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 focus:outline-none focus:ring-2 focus:ring-red-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
               <Trash2 className="h-4 w-4" />

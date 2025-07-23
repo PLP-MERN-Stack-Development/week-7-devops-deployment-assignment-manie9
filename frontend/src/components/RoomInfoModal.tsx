@@ -1,6 +1,6 @@
 import React from 'react'
 import { X, Hash, Lock, Users, Calendar, Crown, Shield, User } from 'lucide-react'
-import { Room } from '../stores/chatStore'
+import { Room } from '../types'
 import { format } from 'date-fns'
 
 interface RoomInfoModalProps {
@@ -61,8 +61,7 @@ const RoomInfoModal: React.FC<RoomInfoModalProps> = ({ room, onClose }) => {
               <div>
                 <h3 className="text-lg font-semibold text-white">{room.name}</h3>
                 <div className="flex items-center space-x-2 text-sm text-gray-400">
-                  
-                  {room.isGeneral && (
+                  {room.isGeneral === true && (
                     <span className="bg-green-500/20 text-green-400 px-2 py-1 rounded-full text-xs">
                       General
                     </span>

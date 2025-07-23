@@ -7,7 +7,7 @@ interface EmojiPickerProps {
   position?: 'top' | 'bottom'
 }
 
-const EMOJI_LIST = [
+const EMOJI_LIST: string[] = [
   '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣',
   '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰',
   '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜',
@@ -159,12 +159,14 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({
   }
 
   return (
-    <div className={`emoji-picker ${position === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'}`}>
+    <div className={`absolute z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-4 w-80 ${
+      position === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'
+    }`}>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-medium text-gray-700">Pick an emoji</h3>
+        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Pick an emoji</h3>
         <button
           onClick={onClose}
-          className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+          className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
         >
           <X className="h-4 w-4" />
         </button>
@@ -175,15 +177,15 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({
         placeholder="Search emojis..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        className="w-full px-3 py-2 mb-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full px-3 py-2 mb-3 text-sm border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
       />
       
-      <div className="emoji-grid">
+      <div className="grid grid-cols-8 gap-2 max-h-48 overflow-y-auto">
         {filteredEmojis.slice(0, 64).map((emoji, index) => (
           <button
             key={index}
             onClick={() => handleEmojiClick(emoji)}
-            className="emoji-item"
+            className="p-2 text-lg hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
             title={emoji}
           >
             {emoji}

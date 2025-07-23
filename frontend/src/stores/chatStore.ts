@@ -1,107 +1,11 @@
 import { create } from 'zustand'
 import axios from 'axios'
 import toast from 'react-hot-toast'
+import { Room, Message, ChatState } from '../types'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
-export interface Room {
-  _id: string
-  name: string
-  description: string
-  isGeneral?: boolean;
-  isPrivate: boolean
-  creator: {
-    _id: string
-    username: string
-    avatar: string
-  }
-  members: Array<{
-    user: {
-      _id: string
-      username: string
-      avatar: string
-      status: string
-    }
-    joinedAt: Date
-    role: 'admin' | 'moderator' | 'member'
-  }>
-  maxMembers: number
-  tags: string[]
-  lastActivity: Date
-  createdAt: Date
-  updatedAt: Date
-}
-
-export interface Message {
-  _id: string
-  content: string
-  sender: {
-    _id: string
-    username: string
-    avatar: string
-  }
-  room: string
-  messageType: 'text' | 'image' | 'file' | 'system'
-  fileUrl?: string
-  fileName?: string
-  fileSize?: number
-  isEdited: boolean
-  editedAt?: Date
-  replyTo?: {
-    _id: string
-    content: string
-    sender: {
-      _id: string
-      username: string
-    }
-  }
-  reactions: Array<{
-    user: {
-      _id: string
-      username: string
-    }
-    emoji: string
-    createdAt: Date
-  }>
-  readBy: Array<{
-    user: string
-    readAt: Date
-  }>
-  createdAt: Date
-  updatedAt: Date
-}
-
-interface ChatState {
-  rooms: Room[]
-  currentRoom: Room | null
-  messages: Record<string, Message[]>
-  onlineUsers: Record<string, boolean>
-  typingUsers: Record<string, string[]>
-  isLoading: boolean
-  
-  // Room actions
-  fetchRooms: () => Promise<void>
-  createRoom: (roomData: Partial<Room>) => Promise<boolean>
-  joinRoom: (roomId: string, password?: string) => Promise<boolean>
-  leaveRoom: (roomId: string) => Promise<boolean>
-  setCurrentRoom: (room: Room | null) => void
-  
-  // Message actions
-  fetchMessages: (roomId: string) => Promise<void>
-  addMessage: (message: Message) => void
-  updateMessage: (messageId: string, updates: Partial<Message>) => void
-  deleteMessage: (messageId: string) => void
-  
-  // Real-time actions
-  setUserOnline: (userId: string, isOnline: boolean) => void
-  setUserTyping: (roomId: string, _: string, username: string, isTyping: boolean) => void
-  
-  // Utility actions
-  clearMessages: (roomId: string) => void
-  reset: () => void
-}
-
-export const useChatStore = create<ChatState>((set, _) => ({
+export const useChatStore = create<ChatState>((set) => ({
   rooms: [],
   currentRoom: null,
   messages: {},
@@ -249,7 +153,7 @@ export const useChatStore = create<ChatState>((set, _) => ({
     }))
   },
 
-  setUserTyping: (roomId: string, _: string, username: string, isTyping: boolean) => {
+  setUserTyping: (roomId: string, _userId: string, username: string, isTyping: boolean) => {
     set(state => {
       const roomTypingUsers = state.typingUsers[roomId] || []
       

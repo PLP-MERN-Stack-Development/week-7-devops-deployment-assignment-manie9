@@ -15,9 +15,9 @@ const Chat: React.FC = () => {
   }, [fetchRooms])
 
   return (
-    <div className="flex h-screen bg-gray-900">
+    <div className="flex h-screen bg-gray-100 dark:bg-gray-900 overflow-hidden">
       <Sidebar />
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Connection status */}
         {!isConnected && (
           <div className="bg-yellow-600 text-white px-4 py-2 text-sm text-center">

@@ -3,7 +3,7 @@ import { format, isToday, isYesterday } from 'date-fns'
 import { useAuthStore } from '../stores/authStore'
 import { useChatStore } from '../stores/chatStore'
 import { useSocket } from '../contexts/SocketContext'
-import { Message } from '../stores/chatStore'
+import { Message } from '../types'
 import { MoreVertical, Reply, Smile, Download, Eye } from 'lucide-react'
 import EmojiPicker from './EmojiPicker'
 
@@ -11,13 +11,12 @@ interface MessageListProps {
   messages: Message[]
 }
 
-const MessageList: React.FC<MessageListProps> = ({ messages }) => {
+export default function MessageList({ messages }: MessageListProps) {
   const { user } = useAuthStore()
   const { typingUsers, currentRoom } = useChatStore()
   const { reactToMessage } = useSocket()
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
   const [showEmojiPicker, setShowEmojiPicker] = React.useState<string | null>(null)
-  //const [replyingTo, setReplyingTo] = React.useState<Message | null>(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -107,188 +106,115 @@ const MessageList: React.FC<MessageListProps> = ({ messages }) => {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-6">
-      {Object.entries(messageGroups).map(([dateKey, dateMessages]) => (
-        <div key={dateKey}>
-          {/* Date separator */}
-          <div className="flex items-center justify-center my-6">
-            <div className="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-sm text-gray-300 border border-white/20">
-              {dateKey}
-            </div>
-          </div>
-
-          {/* Messages for this date */}
-          <div className="space-y-4">
-            {dateMessages.map((message, index) => {
-              const isOwnMessage = message.sender._id === user?.id
-              const messageTime = formatMessageTime(new Date(message.createdAt))
-              const showAvatar = index === 0 || dateMessages[index - 1].sender._id !== message.sender._id
-              const isLastFromSender = index === dateMessages.length - 1 || dateMessages[index + 1].sender._id !== message.sender._id
-
-              return (
-                <div
-                  key={message._id}
-                  className={`flex items-end space-x-2 group ${isOwnMessage ? 'flex-row-reverse space-x-reverse' : ''}`}
-                >
-                  {/* Avatar */}
-                  <div className={`w-8 h-8 ${showAvatar ? 'opacity-100' : 'opacity-0'}`}>
-                    {!isOwnMessage && (
-                      <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                        <span className="text-xs font-medium text-white">
-                          {message.sender.username.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Message content */}
-                  <div className={`flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'} max-w-xs lg:max-w-md`}>
-                    {/* Sender name and time */}
-                    {showAvatar && !isOwnMessage && (
-                      <div className="flex items-center space-x-2 mb-1 px-1">
-                        <span className="text-sm font-medium text-white">
-                          {message.sender.username}
-                        </span>
-                        <span className="text-xs text-gray-400">{messageTime}</span>
-                      </div>
-                    )}
-
-                    {/* Reply indicator */}
-                    {message.replyTo && (
-                      <div className="mb-2 p-2 bg-black/20 rounded-lg border-l-2 border-blue-400 max-w-full">
-                        <div className="text-xs text-blue-400 mb-1">
-                          Replying to {message.replyTo.sender.username}
-                        </div>
-                        <div className="text-sm opacity-75 truncate">
-                          {message.replyTo.content}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Message bubble */}
-                    <div
-                      className={`message-bubble ${isOwnMessage ? 'own' : 'other'} ${isLastFromSender ? 'mb-2' : 'mb-1'}`}
-                    >
-                      <div className="break-words">{message.content}</div>
-                      
-                      {/* File content */}
-                      {renderFileMessage(message)}
-
-                      {/* Message reactions */}
-                      {message.reactions.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {message.reactions.reduce((acc: any[], reaction) => {
-                            const existing = acc.find(r => r.emoji === reaction.emoji)
-                            if (existing) {
-                              existing.count++
-                              existing.users.push(reaction.user.username)
-                            } else {
-                              acc.push({
-                                emoji: reaction.emoji,
-                                count: 1,
-                                users: [reaction.user.username]
-                              })
-                            }
-                            return acc
-                          }, []).map((reaction, index) => (
-                            <button
-                              key={index}
-                              onClick={() => handleReaction(message._id, reaction.emoji)}
-                              className="flex items-center space-x-1 px-2 py-1 bg-black/20 rounded-full text-xs hover:bg-black/30 transition-colors"
-                              title={reaction.users.join(', ')}
-                            >
-                              <span>{reaction.emoji}</span>
-                              <span>{reaction.count}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Edit indicator */}
-                      {message.isEdited && (
-                        <div className="text-xs opacity-50 mt-1">(edited)</div>
-                      )}
-
-                      {/* Time for own messages */}
-                      {isOwnMessage && isLastFromSender && (
-                        <div className="text-xs opacity-75 mt-1 text-right">
-                          {messageTime}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Message actions */}
-                    <div className={`opacity-0 group-hover:opacity-100 transition-opacity ${isOwnMessage ? 'mr-2' : 'ml-2'}`}>
-                      <div className="flex items-center space-x-1 bg-white/10 backdrop-blur-sm rounded-lg p-1 border border-white/20">
-                        <div className="relative">
-                          <button
-                            onClick={() => setShowEmojiPicker(showEmojiPicker === message._id ? null : message._id)}
-                            className="p-1 text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors"
-                            title="React"
-                          >
-                            <Smile className="h-4 w-4" />
-                          </button>
-                          
-                          {showEmojiPicker === message._id && (
-                            <div className="absolute bottom-full mb-2 right-0 z-50">
-                              <EmojiPicker
-                                onEmojiSelect={(emoji) => handleReaction(message._id, emoji)}
-                                onClose={() => setShowEmojiPicker(null)}
-                                position="top"
-                              />
-                            </div>
-                          )}
-                        </div>
-                        
-                         <button
-                          //onClick={() => setReplyingTo(message)}
-                          className="p-1 text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors"
-                          title="Reply"
-                        >
-                          <Reply className="h-4 w-4" />
-                        </button> 
-                        
-                        <button
-                          className="p-1 text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors"
-                          title="More"
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
+    <div className="flex-1 overflow-y-auto p-4 space-y-4 h-full">
+      {messages.length === 0 ? (
+        <div className="flex items-center justify-center h-full text-gray-500">
+          <div className="text-center">
+            <p className="text-lg font-medium mb-2">No messages yet</p>
+            <p className="text-sm">Start a conversation!</p>
           </div>
         </div>
-      ))}
+      ) : (
+        messages.map((message, index) => {
+          const showAvatar = index === 0 || messages[index - 1].sender._id !== message.sender._id
+          const isOwn = message.sender._id === user?.id
 
-      {/* Typing indicator */}
-      {roomTypingUsers.length > 0 && (
-        <div className="flex justify-start">
-          <div className="max-w-xs lg:max-w-md">
-            <div className="bg-white/10 backdrop-blur-sm text-gray-300 px-4 py-3 rounded-2xl border border-white/20">
-              <div className="flex items-center space-x-2">
-                <div className="typing-indicator">
-                  <div className="typing-dot"></div>
-                  <div className="typing-dot"></div>
-                  <div className="typing-dot"></div>
+          return (
+            <div
+              key={message._id}
+              className={`flex items-start space-x-3 ${isOwn ? 'flex-row-reverse space-x-reverse' : ''}`}
+            >
+              {/* Avatar */}
+              <div className={`w-8 h-8 ${showAvatar ? 'opacity-100' : 'opacity-0'}`}>
+                {!isOwn && (
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <span className="text-xs font-medium text-white">
+                      {message.sender.username.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Message content */}
+              <div className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'} max-w-xs lg:max-w-md`}>
+                {/* Sender name and time */}
+                {showAvatar && !isOwn && (
+                  <div className="flex items-center space-x-2 mb-1">
+                    <span className="font-medium text-sm text-gray-900 dark:text-white">
+                      {message.sender.username}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {new Date(message.createdAt).toLocaleTimeString()}
+                    </span>
+                  </div>
+                )}
+
+                <div className={`relative group ${isOwn ? 'ml-auto' : ''}`}>
+                  <div
+                    className={`
+                      px-4 py-2 rounded-2xl max-w-xs lg:max-w-md break-words
+                      ${isOwn
+                        ? 'bg-blue-500 text-white ml-auto'
+                        : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600'
+                      }
+                    `}
+                  >
+                    {renderFileMessage(message)}
+                    <p className="text-sm">{message.content}</p>
+                  </div>
+
+                  {/* Message reactions */}
+                  {message.reactions && message.reactions.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {message.reactions.map((reaction, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => handleReaction(message._id, reaction.emoji)}
+                          className={`
+                            px-2 py-1 rounded-full text-xs flex items-center space-x-1
+                            ${reaction.user._id === user?.id
+                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                              : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
+                            }
+                            hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors
+                          `}
+                        >
+                          <span>{reaction.emoji}</span>
+                          <span>1</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Message actions */}
+                  <div className="absolute right-0 top-0 -mt-2 -mr-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => setShowEmojiPicker(showEmojiPicker === message._id ? null : message._id)}
+                      className="w-6 h-6 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-xs hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
+                    >
+                      😊
+                    </button>
+                  </div>
+
+                  {/* Emoji picker */}
+                  {showEmojiPicker === message._id && (
+                    <div className="absolute top-full right-0 mt-2 z-50">
+                      <EmojiPicker
+                        onEmojiSelect={(emoji) => {
+                          handleReaction(message._id, emoji)
+                          setShowEmojiPicker(null)
+                        }}
+                        onClose={() => setShowEmojiPicker(null)}
+                      />
+                    </div>
+                  )}
                 </div>
-                <span className="text-sm">
-                  {roomTypingUsers.length === 1
-                    ? `${roomTypingUsers[0]} is typing...`
-                    : `${roomTypingUsers.length} people are typing...`}
-                </span>
               </div>
             </div>
-          </div>
-        </div>
+          )
+        })
       )}
-
       <div ref={messagesEndRef} />
     </div>
   )
 }
-
-export default MessageList

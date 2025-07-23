@@ -11,7 +11,7 @@ export interface User {
   email: string
   avatar: string
   status: 'online' | 'offline' | 'away'
-  lastSeen?: Date
+  lastSeen?: string
 }
 
 interface AuthState {

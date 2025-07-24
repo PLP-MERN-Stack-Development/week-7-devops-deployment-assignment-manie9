@@ -4,7 +4,7 @@ import { useAuthStore } from '../stores/authStore'
 import { useChatStore } from '../stores/chatStore'
 import { useSocket } from '../contexts/SocketContext'
 import { Message } from '../types'
-import { MoreVertical, Reply, Smile, Download, Eye } from 'lucide-react'
+import { Download, Eye } from 'lucide-react'
 import EmojiPicker from './EmojiPicker'
 
 interface MessageListProps {

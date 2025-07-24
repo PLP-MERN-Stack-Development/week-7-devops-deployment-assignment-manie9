@@ -277,4 +277,4 @@ If you have any questions or need help with deployment, please:
 
 Render : https://real-time-multi-chat-room.onrender.com
 
-vercel : 
+vercel : real-time-multi-chat-room.vercel.app

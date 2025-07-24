@@ -1,7 +1,5 @@
 import React from 'react'
-import { format, isToday, isYesterday } from 'date-fns'
 import { useAuthStore } from '../stores/authStore'
-import { useChatStore } from '../stores/chatStore'
 import { useSocket } from '../contexts/SocketContext'
 import { Message } from '../types'
 import { Download, Eye } from 'lucide-react'
@@ -13,7 +11,7 @@ interface MessageListProps {
 
 export default function MessageList({ messages }: MessageListProps) {
   const { user } = useAuthStore()
-  const { typingUsers, currentRoom } = useChatStore()
+  // Removed unused destructuring of useChatStore()
   const { reactToMessage } = useSocket()
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
   const [showEmojiPicker, setShowEmojiPicker] = React.useState<string | null>(null)
@@ -30,43 +28,6 @@ export default function MessageList({ messages }: MessageListProps) {
     reactToMessage(messageId, emoji)
     setShowEmojiPicker(null)
   }
-
-  const formatMessageTime = (date: Date) => {
-    if (isToday(date)) {
-      return format(date, 'HH:mm')
-    } else if (isYesterday(date)) {
-      return `Yesterday ${format(date, 'HH:mm')}`
-    } else {
-      return format(date, 'MMM dd, HH:mm')
-    }
-  }
-
-  const groupMessagesByDate = (messages: Message[]) => {
-    const groups: Record<string, Message[]> = {}
-    
-    messages.forEach(message => {
-      const date = new Date(message.createdAt)
-      let dateKey: string
-      
-      if (isToday(date)) {
-        dateKey = 'Today'
-      } else if (isYesterday(date)) {
-        dateKey = 'Yesterday'
-      } else {
-        dateKey = format(date, 'MMMM dd, yyyy')
-      }
-      
-      if (!groups[dateKey]) {
-        groups[dateKey] = []
-      }
-      groups[dateKey].push(message)
-    })
-    
-    return groups
-  }
-
-  const messageGroups = groupMessagesByDate(messages)
-  const roomTypingUsers = currentRoom ? typingUsers[currentRoom._id] || [] : []
 
   const renderFileMessage = (message: Message) => {
     if (message.messageType === 'image' && message.fileUrl) {

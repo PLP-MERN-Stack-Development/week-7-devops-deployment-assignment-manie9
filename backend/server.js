@@ -17,7 +17,7 @@ const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
     origin: process.env.NODE_ENV === 'production' 
-      ? [process.env.FRONTEND_URL, process.env.FRONTEND_URL_ALT]
+      ? [process.env.FRONTEND_URL, process.env.FRONTEND_URL_ALT, 'http://localhost:5173']
       : ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:4173'],
     methods: ['GET', 'POST'],
     credentials: true
@@ -52,7 +52,7 @@ app.use('/api/', limiter);
 // CORS configuration
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
-    ? [process.env.FRONTEND_URL, process.env.FRONTEND_URL_ALT]
+    ? [process.env.FRONTEND_URL, process.env.FRONTEND_URL_ALT, 'http://localhost:5173']
     : ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:4173'],
   credentials: true,
   optionsSuccessStatus: 200
